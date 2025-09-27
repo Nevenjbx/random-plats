@@ -10,7 +10,7 @@ app = Flask(__name__, static_folder="../frontend", static_url_path="/")
 
 
 # Configuration de SQLite
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///plats.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://plats_db_user:gqg1djCTtbXHHi5XVb1PDKGjP6Qrt2qC@dpg-d3c5rjqdbo4c73du2050-a/plats_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 

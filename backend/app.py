@@ -1,3 +1,4 @@
+import random
 from flask import Flask, jsonify, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql.expression import func
@@ -48,20 +49,22 @@ last_plat = None
 def random_plat():
     global last_plat
 
-    # Si on a déjà un dernier plat, on filtre
-    query = db.select(Plat)
-    if last_plat:
-        query = query.filter(Plat.id != last_plat.id)
-
-    plat = db.session.execute(
-        query.order_by(func.random()).limit(1)
-    ).scalar_one_or_none()
-
-    if not plat:
+    # Taille de la table
+    total = db.session.query(func.count(Plat.id)).scalar()
+    if total == 0:
         return jsonify({"error": "Aucun plat disponible"}), 404
 
-    last_plat = plat
-    return jsonify({"plat": plat.nom})
+    # Tenter jusqu'à trouver un plat différent du dernier
+    for _ in range(5):  # max 5 tentatives pour éviter boucle infinie
+        random_index = random.randint(0, total - 1)
+        plat = db.session.query(Plat).offset(random_index).limit(1).scalar_one()
+
+        if not last_plat or plat.id != last_plat.id:
+            last_plat = plat
+            return jsonify({"plat": plat.nom})
+
+    # Si jamais on n'a trouvé que le même plat (cas: table avec 1 ligne)
+    return jsonify({"error": "Pas assez de plats pour garantir du random"}), 400
 
 
 
